@@ -6,9 +6,11 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+
+    // Run the migrations.
+    // Migrations creates the database table and its columns.
+    // blueprint for the database table.
+
     public function up(): void
     {
         Schema::create('tasks', function (Blueprint $table) {
