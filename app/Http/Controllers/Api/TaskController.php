@@ -15,19 +15,21 @@ use Illuminate\Http\Request;
 class TaskController extends Controller
 {
     /**
+     * BUILDING A QUERY
      * Display a listing of the resource.
      * Return every task stored in the database.
      */
     public function index(Request $request)
     {
 
-        // SEARCH AND LIST
+
 
         // Fetch every row from the "tasks" table.
         // Or
         // Start a query for rows in the tasks table using the Task model.
         $query = Task::query();
 
+        // SEARCH
         // If the client sends ?search=value in the URL now being stored in $request,
         // only return rows where the title column contains that value from the client.
         if ($request->search) {
@@ -39,16 +41,35 @@ class TaskController extends Controller
 
 
         // SORT
-        if ($request->sort == 'due_date') {
-            // Sort rows from the tasks table by the due_date column.
-            // By default, the earliest due date appears first.
-            $query->orderBy('due_date');
+        // Client examples: GET /api/tasks?sort=due_date or GET /api/tasks?sort=created_at
+        // Laravel exposes that query value as $request->sort.
+        // When a valid column is provided, apply it to the query ordering.
+        if ($request->sort === 'due_date' || $request->sort === 'created_at') {
+
+
+            // Use the sort value sent from Postman only if it matches
+            // one of the allowed database columns: due_date or created_at
+            // 
+            // This decides which column Laravel uses to order
+            // the rows returned from the tasks table.
+            $query->orderBy($request->sort);
         }
 
         // Run the query.
-        // Without search URL query: returns all rows from the tasks table.
-        // With search URL query: returns only matching rows from the tasks table.
-        return response()->json($query->get(), 201);
+        // Without search URL query from postman client: returns all rows from the tasks table.
+        // With search URL query from postman client: returns only matching rows from the tasks table.
+        // return response()->json($query->get(), 201);
+
+
+        // PAGINATE():
+        // Return rows from the tasks table in pages instead of all at once.
+        // paginate(2) means return 2 rows per page.
+        //
+        // The client (Postman) chooses WHICH page by sending ?page=1, ?page=2, etc. in the URL.
+        // Laravel automatically reads that page number from the URL and retrieves
+        // only the corresponding number of rows from the tasks table,
+        // using the number passed to paginate().
+        return response()->json($query->paginate(2), 200);
     }
 
     /**
@@ -59,6 +80,51 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
+        /**
+         * VALIDATION RULES FOR STORE()
+         * 
+         * Validate the JSON body before creating a new row in the tasks table.
+         * If any rule fails, Laravel automatically stops here and returns a 422 validation error to Postman.
+         */
+        $validateData = $request->validate([
+            // Title is required because every task must have a name.
+            // string means the value must be text.
+            // max:255 matches the database column limit from the migration.
+            'title' => 'required|string|max:255',
+
+            // Description can be empty.
+            // nullable means the client may send null or skip this field.
+            // string means if it is sent, it must be text.
+            'description' => 'nullable|string',
+
+            // Due date is required because the assignment says every task has a deadline.
+            // date means Laravel must be able to understand it as a valid date/time.
+            'due_date' => 'required|date',
+
+            // Status is required.
+            // in: means only these exact values are allowed.
+            'status' => 'required|in:completed,not_completed',
+
+            // Priority is required.
+            // Only low, medium, or high are allowed.
+            'priority' => 'required|in:low,medium,high',
+
+            // Category is required because every task should belong to a group.
+            // max:255 keeps it compatible with the database string column.
+            'category' => 'required|string|max:255',
+        ]);
+
+
+
+        // Create a new database row using only the validated data.
+        // This protects the database from invalid or unexpected request values.
+
+        $task = Task::create($validateData);
+
+
+        /** 
+         * UNSANITIZED VERSION
+         * 
         // Create a new database row using values from the request sent from Postman (the client).
         $task = Task::create([
 
@@ -70,6 +136,8 @@ class TaskController extends Controller
             'priority' => $request->priority,
             'category' => $request->category,
         ]);
+         */
+
 
         // Send this JSON response back to postman that made the request
         // 201 HTTP status codes tell the client whether the request succeeded or failed
@@ -78,6 +146,8 @@ class TaskController extends Controller
             'message' => 'Task created successfully',
         ], 201);
     }
+
+
 
     /**
      * DISPLAY THE SPECIFIED RESOURCE.
@@ -94,8 +164,11 @@ class TaskController extends Controller
         return response()->json($task, 200);
     }
 
+
+
     /**
-     * Update the specified resource in storage.
+     * UPDATE SPECIFIC RESOURCE OR ID IN STORAGE.
+     * 
      * $request is A box that contains everything the client (Postman) sent.
      * 'string' tells PHP the expected data type of the ID.
      * string $id → the ID extracted from the URL.
@@ -105,20 +178,33 @@ class TaskController extends Controller
     {
         // Find the task by ID from the URL.
         // $task is: The row that was found and is about to be changed.
-        // is the database rows returned as objects.
+        // $task is the database rows returned as objects.
         // the current existing row NOT yet updated with Postman data objects.
         $task = Task::findOrFail($id);
 
         // Update the task using data sent by Postman.
-        $task->update([
-            // Take the title from Postman $request and put it into the database row.
-            'title' => $request->title,
-            'description' => $request->description,
-            'due_date' => $request->due_date,
-            'status' => $request->status,
-            'priority' => $request->priority,
-            'category' => $request->category,
+        $validatedData = $request->validate([
+            // Title is required and must fit the database string column.
+            'title' => 'required|string|max:255',
+
+            // Description is optional, but if sent, it must be text.
+            'description' => 'nullable|string',
+
+            // Due date must be a valid date/time value.
+            'due_date' => 'required|date',
+
+            // Status must be one of the values allowed by our database enum.
+            'status' => 'required|in:completed,not_completed',
+
+            // Priority must be one of the values allowed by our database enum.
+            'priority' => 'required|in:low,medium,high',
+
+            // Category is required and must fit the database string column.
+            'category' => 'required|string|max:255',
         ]);
+
+        // Update the row using only validated values from Postman.
+        $task->update($validatedData);
 
         // Send a success message back to the client(Postman).
         return response()->json([
