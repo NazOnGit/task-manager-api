@@ -1,58 +1,345 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Task Manager API (РУС)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## О проекте
 
-## About Laravel
+REST API для управления задачами, разработанный на Laravel 13.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Проект поддерживает:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- создание задачи;
+- получение списка задач;
+- получение задачи по ID;
+- обновление задачи;
+- удаление задачи;
+- поиск по названию;
+- сортировку по сроку выполнения (`due_date`);
+- сортировку по дате создания (`created_at`);
+- пагинацию;
+- документацию Swagger.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Используемые технологии
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- PHP 8.2
+- Laravel 13
+- MySQL
+- Eloquent ORM
+- Swagger (L5-Swagger)
+- Postman
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## Запуск проекта
 
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Клонировать репозиторий:
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone <repository-url>
+cd task-manager-api
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Установить зависимости:
 
-## Contributing
+```bash
+composer install
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Создать файл окружения:
 
-## Code of Conduct
+```bash
+cp .env.example .env
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Создать ключ приложения:
 
-## Security Vulnerabilities
+```bash
+php artisan key:generate
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Настроить подключение к базе данных в файле `.env`.
 
-## License
+Выполнить миграции:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+php artisan migrate
+```
+
+Запустить проект:
+
+```bash
+php artisan serve
+```
+
+---
+
+## Swagger
+
+Swagger доступен по адресу:
+
+```text
+http://127.0.0.1:8000/api/documentation
+```
+
+---
+
+## API
+
+| Метод  | Endpoint        | Описание              |
+| ------ | --------------- | --------------------- |
+| GET    | /api/tasks      | Получить список задач |
+| POST   | /api/tasks      | Создать задачу        |
+| GET    | /api/tasks/{id} | Получить задачу по ID |
+| PUT    | /api/tasks/{id} | Обновить задачу       |
+| DELETE | /api/tasks/{id} | Удалить задачу        |
+
+---
+
+## Поиск
+
+Поиск по названию задачи:
+
+```text
+GET /api/tasks?search=Laravel
+```
+
+---
+
+## Сортировка
+
+По сроку выполнения:
+
+```text
+GET /api/tasks?sort=due_date
+```
+
+По дате создания:
+
+```text
+GET /api/tasks?sort=created_at
+```
+
+---
+
+## Пагинация
+
+Получить вторую страницу:
+
+```text
+GET /api/tasks?page=2
+```
+
+---
+
+## Валидация
+
+При создании и обновлении задачи проверяются:
+
+- title
+- description
+- due_date
+- status
+- priority
+- category
+
+Если данные неверны, API возвращает ошибку **422 Unprocessable Entity**.
+
+---
+
+## Тестирование
+
+Проект протестирован с помощью:
+
+- Postman
+- Swagger UI
+
+Проверены:
+
+- создание задачи;
+- получение списка задач;
+- получение задачи по ID;
+- обновление задачи;
+- удаление задачи;
+- поиск;
+- сортировка;
+- пагинация;
+- валидация данных.
+
+---
+
+# Task Manager API (ENGLISH)
+
+## About the Project
+
+This project is a REST API for task management built with Laravel 13.
+
+The API supports:
+
+- Create a task
+- Get a list of tasks
+- Get a task by ID
+- Update a task
+- Delete a task
+- Search tasks by title
+- Sort tasks by due date (`due_date`)
+- Sort tasks by creation date (`created_at`)
+- Pagination
+- Swagger API documentation
+
+---
+
+## Technologies
+
+- PHP 8.2
+- Laravel 13
+- MySQL
+- Eloquent ORM
+- Swagger (L5-Swagger)
+- Postman
+
+---
+
+## Installation
+
+Clone the repository:
+
+```bash
+git clone <repository-url>
+cd task-manager-api
+```
+
+Install dependencies:
+
+```bash
+composer install
+```
+
+Create the environment file:
+
+```bash
+cp .env.example .env
+```
+
+Generate the application key:
+
+```bash
+php artisan key:generate
+```
+
+Configure the database connection in the `.env` file.
+
+Run the migrations:
+
+```bash
+php artisan migrate
+```
+
+Start the development server:
+
+```bash
+php artisan serve
+```
+
+---
+
+## Swagger Documentation
+
+Swagger UI is available at:
+
+```text
+http://127.0.0.1:8000/api/documentation
+```
+
+---
+
+## API Endpoints
+
+| Method | Endpoint        | Description       |
+| ------ | --------------- | ----------------- |
+| GET    | /api/tasks      | Get all tasks     |
+| POST   | /api/tasks      | Create a new task |
+| GET    | /api/tasks/{id} | Get a task by ID  |
+| PUT    | /api/tasks/{id} | Update a task     |
+| DELETE | /api/tasks/{id} | Delete a task     |
+
+---
+
+## Search
+
+Search tasks by title:
+
+```text
+GET /api/tasks?search=Laravel
+```
+
+---
+
+## Sorting
+
+Sort by due date:
+
+```text
+GET /api/tasks?sort=due_date
+```
+
+Sort by creation date:
+
+```text
+GET /api/tasks?sort=created_at
+```
+
+---
+
+## Pagination
+
+Get the second page of results:
+
+```text
+GET /api/tasks?page=2
+```
+
+Search, sorting, and pagination can also be combined:
+
+```text
+GET /api/tasks?search=Laravel&sort=created_at&page=2
+```
+
+---
+
+## Validation
+
+The following fields are validated when creating or updating a task:
+
+- title
+- description
+- due_date
+- status
+- priority
+- category
+
+If validation fails, the API returns:
+
+```text
+HTTP 422 Unprocessable Entity
+```
+
+---
+
+## Testing
+
+The API was tested using:
+
+- Postman
+- Swagger UI
+
+The following functionality was verified:
+
+- Create task
+- Get all tasks
+- Get task by ID
+- Update task
+- Delete task
+- Search
+- Sort
+- Pagination
+- Request validation
