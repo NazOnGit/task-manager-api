@@ -118,25 +118,7 @@ class TaskController extends Controller
 
         // Create a new database row using only the validated data.
         // This protects the database from invalid or unexpected request values.
-
         $task = Task::create($validateData);
-
-
-        /** 
-         * UNSANITIZED VERSION
-         * 
-        // Create a new database row using values from the request sent from Postman (the client).
-        $task = Task::create([
-
-            // Get the "title" value from the postman json body request and pass it into the database row column.
-            'title' => $request->title,
-            'description' => $request->description,
-            'due_date' => $request->due_date,
-            'status' => $request->status,
-            'priority' => $request->priority,
-            'category' => $request->category,
-        ]);
-         */
 
 
         // Send this JSON response back to postman that made the request

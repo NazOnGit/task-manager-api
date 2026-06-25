@@ -15,22 +15,26 @@ class OpenApiSpec
   #[OA\Get(
     path: '/api/tasks',
     summary: 'Get task list',
-    description: 'Returns rows from the tasks table. Supports search, sorting, and pagination.',
+    description: 'Returns rows from the tasks table. Supports search by title, sorting by due_date or created_at, and pagination. Query parameters can be combined.',
     tags: ['Tasks'],
     parameters: [
       new OA\Parameter(
         name: 'search',
         in: 'query',
         required: false,
-        description: 'Search text inside the title column.',
+        description: 'Return only rows whose title contains the search text.',
         schema: new OA\Schema(type: 'string')
       ),
       new OA\Parameter(
         name: 'sort',
         in: 'query',
         required: false,
-        description: 'Sort rows by due_date.',
-        schema: new OA\Schema(type: 'string', example: 'due_date')
+        description: 'Sort rows by due_date or created_at.',
+        schema: new OA\Schema(
+          type: 'string',
+          enum: ['due_date', 'created_at'],
+          example: 'due_date'
+        )
       ),
       new OA\Parameter(
         name: 'page',

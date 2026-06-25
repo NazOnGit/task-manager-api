@@ -12,13 +12,13 @@
                     "Tasks"
                 ],
                 "summary": "Get task list",
-                "description": "Returns rows from the tasks table. Supports search, sorting, and pagination.",
+                "description": "Returns rows from the tasks table. Supports search by title, sorting by due_date or created_at, and pagination. Query parameters can be combined.",
                 "operationId": "c695515c38113fe023283df8c63f7fc3",
                 "parameters": [
                     {
                         "name": "search",
                         "in": "query",
-                        "description": "Search text inside the title column.",
+                        "description": "Return only rows whose title contains the search text.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -27,11 +27,15 @@
                     {
                         "name": "sort",
                         "in": "query",
-                        "description": "Sort rows by due_date.",
+                        "description": "Sort rows by due_date or created_at.",
                         "required": false,
                         "schema": {
                             "type": "string",
-                            "example": "due_date"
+                            "example": "due_date",
+                            "enum": [
+                                "due_date",
+                                "created_at"
+                            ]
                         }
                     },
                     {
